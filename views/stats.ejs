@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data ELV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *{
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+        *, body{
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 16px;
+        }
+        .container{
+            text-align: center;
+        }
+        
+    </style>
+    <%- include('modules/features-header'); %>
+</head>
+
+<body>
+
+    <div class="container">
+        <ul class="list">
+            <li>Số lượng căn hộ: <strong><%= homeCount %></strong></li>
+            <li>Số lượng hoá đơn: <strong><%= billCount %></strong></li>
+            <li>Cập nhật lần cuối: <%= lastUpdateTime %> ...<%= lastUpdateLink.substring(lastUpdateLink.length - 8) %></li>
+        </ul>
+    </div>
+
+    <%- include('modules/features'); %>
+
+</body>
+
+</html>

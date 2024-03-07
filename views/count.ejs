@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Database ELV</title>
+    <%- include('modules/features-header'); %>
+  </head>
+  <body>
+    <main>
+        <div id="status"></div>
+        <div id="data"></div>
+    </main>
+    <%- include('modules/features'); %>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <script>
+        function GetCountUp(){
+            document.querySelector("#status").innerHTML = 'đang lấy dữ liệu ...';
+            axios.get('/CountUp')
+            .then(function (response) {
+                if(response.data.statusAction == "NO DATA"){
+                    GetCountUp();
+                }
+                document.querySelector("#status").innerHTML = '';
+                console.log(response.data)
+                console.log(typeof(response))
+                var textOutput = timeConverter(response.data.time) + " " + response.data.query.invoice + " <strong><u>" + response.data.statusAction+"</u></strong>";
+                if( response.data.statusAction == "ADD" || response.data.statusAction == "SKIP" ){
+                    textOutput += " | "+response.data.query.name + "__" + response.data.query.room + "-" + response.data.query.building;
+                }
+                // document.querySelector("#data").innerHTML += '<p>'+textOutput+'</p>';
+                var getOutHTML = document.querySelector("#data").innerHTML;
+                document.querySelector("#data").innerHTML = '<p>'+textOutput+'</p>' + getOutHTML;
+                // document.querySelector("#data").insertAdjacentHTML('beforebegin', '<p>'+textOutput+'</p>');
+                var timeout = setTimeout(function(){
+                    clearTimeout(timeout);
+                    GetCountUp();
+                    
+                }, 2000);
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+            .finally(function () {
+                // always executed
+            });
+        }
+        function timeConverter(UNIX_timestamp){
+            var a = new Date(UNIX_timestamp);
+            var hour = a.getUTCHours();
+            var min = a.getUTCMinutes();
+            var sec = a.getUTCSeconds();
+            var time = hour+':'+min+':'+sec ;
+            return time;
+        }
+        GetCountUp();
+    </script>
+  </body>
+</html>

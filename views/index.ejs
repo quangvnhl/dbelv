@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data ELV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *{
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+        *, body{
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 16px;
+        }
+        .container{
+            text-align: center;
+        }
+        .container h3{
+            font-size: 24px;
+            font-weight: 700;
+            color: #798bb5;
+        }
+        .input-box{
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .input-box input{
+            padding: 0 10px;
+            border: 2px solid #dfe3e1;
+            border-right: none;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+            font-size: 22px;
+            height: 50px;
+            outline: none;
+            flex: 4;
+        }
+        .input-box input:target,
+        .input-box input:focus{
+            border-color:#bed4c9;
+        }
+        .input-box input::selection{
+
+        }
+        .input-box button{
+            padding: 10px 30px;
+            border-radius: 10px;
+            background: #5bd559;
+            color: #fff;
+            font-weight: 700;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border: 2px solid #5bd559;
+            cursor: pointer;
+            height: 50px;
+            flex: 1;
+        }
+        table{
+            max-width: 90%;
+            width: 100%;
+            margin: 0 auto;
+        }
+        table td, table th{
+            padding: 5px;
+        }
+        table thead tr{
+            background: #8db5ff;
+        }
+        table tbody tr{
+            background: #f1f3f7;
+        }
+        table tbody tr:nth-child(2n+1){
+            background: #e2e5ed;
+        }
+        .hide{
+            display: none;
+        }
+        .show{
+            display: block;
+        }
+        .search-types{
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .search-types .button-tab{
+            flex: 1;
+            padding: 5px;
+            border: 2px solid #aaaaaa24;
+            border-radius: 3px;
+            margin: 0 10px;
+            background: transparent;
+            outline: none;
+            color: #aaa;
+        }
+        .search-types .button-tab.active{
+            font-weight: 700;
+            border-color: #5f74dc;
+            color: #5f74dc;
+        }
+        #input-search-type-name:checked ~ .input-box #input-name{
+            display: block;
+        }
+        #input-search-type-name:checked ~ .input-box #input-room{
+            display: none;
+        }
+        #input-search-type-name:checked ~ .search-types #search-type-name{
+            font-weight: 700;
+            border-color: #5f74dc;
+            color: #5f74dc;
+        }
+        #input-search-type-room:checked ~ .input-box #input-room{
+            display: block;
+        }
+        #input-search-type-room:checked ~ .input-box #input-name{
+            display: none;
+        }
+        #input-search-type-room:checked ~ .search-types #search-type-room{
+            font-weight: 700;
+            border-color: #5f74dc;
+            color: #5f74dc;
+        }
+        form input[type=radio]{
+            display: none;
+        }
+    </style>
+    <%- include('modules/features-header'); %>
+</head>
+
+<body>
+    <div class="container">
+        <form action="" method="get" id="input-form" onsubmit="return searchName()">
+
+            <input type="radio" name="input-search-type" id="input-search-type-name" value="name" checked>
+            <input type="radio" name="input-search-type" id="input-search-type-room" value="room">
+
+            <div class="search-types">
+                <label for="input-search-type-name" class="button-tab" id="search-type-name">Tìm theo tên</label>
+                <label for="input-search-type-room" class="button-tab" id="search-type-room">Tìm theo căn hộ</label>
+            </div>
+            
+            <div class="input-box">
+                <input type="text" id="input-name" placeholder="VD: Nguyễn Văn A">
+                <input type="text" id="input-room" placeholder="VD: 901A, 1505B">
+                <button type="submit" id="search">Tìm</button>
+            </div>
+        </form>
+        <div class="table" id="search-table" style="display: none">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Tên</td>
+                        <td>Căn hộ</td>
+                        <td>Tòa nhà</td>
+                        <td>Năm</td>
+                        <td>Chi tiết</td>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <%- include('modules/features'); %>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>    
+
+
+        function capLetter(input){
+            const words = input.split(" ");
+
+            for (let i = 0; i < words.length; i++) {
+                words[i] = words[i][0].toUpperCase() + words[i].substr(1);
+            }
+        return words.join(" ");
+        }
+
+        function searchName(){
+            var name = document.querySelector("#input-name");
+            var getRoom = document.querySelector("#input-room");
+            var getSearchType = document.querySelector('input[name="input-search-type"]:checked');
+            if(name.value.length || getRoom.value.length){
+                document.querySelector("#search-table").style.display = "block";
+                document.querySelector("#table-body").innerHTML = "<tr><td colspan='5'>Đang tìm kiếm ....</td></tr>";
+                axios({
+                    method: 'get',
+                    url: '/GetName',
+                    params: {
+                        name: name.value.length ? (name.value) : "",
+                        room: getRoom.value,
+                        searchType: getSearchType.value
+                    }
+                })
+                .then(function (response) {
+                    console.log(response.data.length)
+                    document.querySelector("#search-table").style.display = "block";
+                    if(response.data.length){
+                        var dataBody = "";
+                        for (person of response.data){
+                            dataBody += "<tr><td>"+person.name+"</td><td>"+person.room+"</td><td>"+person.building+"</td><td>"+person.year+"</td><td><a href='/Home/"+person.room+"-"+person.building+"'>Chi tiết</a></td></tr>"
+                        }
+                        document.querySelector("#table-body").innerHTML = dataBody;
+                        
+                    }
+                    else{
+                        document.querySelector("#table-body").innerHTML = "<tr><td colspan='5'>Không tìm thấy tên "+name.value+"</td></tr>";
+                    }
+                });
+            }
+
+            return false;
+        }
+    </script>
+</body>
+
+</html>
