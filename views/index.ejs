@@ -113,7 +113,8 @@
         #input-search-type-name:checked ~ .input-box #input-name{
             display: block;
         }
-        #input-search-type-name:checked ~ .input-box #input-room{
+        #input-search-type-name:checked ~ .input-box #input-room,
+        #input-search-type-name:checked ~ .input-box #input-car{
             display: none;
         }
         #input-search-type-name:checked ~ .search-types #search-type-name{
@@ -124,10 +125,23 @@
         #input-search-type-room:checked ~ .input-box #input-room{
             display: block;
         }
-        #input-search-type-room:checked ~ .input-box #input-name{
+        #input-search-type-room:checked ~ .input-box #input-name,
+        #input-search-type-room:checked ~ .input-box #input-car{
             display: none;
         }
         #input-search-type-room:checked ~ .search-types #search-type-room{
+            font-weight: 700;
+            border-color: #5f74dc;
+            color: #5f74dc;
+        }
+        #input-search-type-car:checked ~ .input-box #input-car{
+            display: block;
+        }
+        #input-search-type-car:checked ~ .input-box #input-name,
+        #input-search-type-car:checked ~ .input-box #input-room{
+            display: none;
+        }
+        #input-search-type-car:checked ~ .search-types #search-type-car{
             font-weight: 700;
             border-color: #5f74dc;
             color: #5f74dc;
@@ -145,15 +159,18 @@
 
             <input type="radio" name="input-search-type" id="input-search-type-name" value="name" checked>
             <input type="radio" name="input-search-type" id="input-search-type-room" value="room">
+            <input type="radio" name="input-search-type" id="input-search-type-car" value="car">
 
             <div class="search-types">
                 <label for="input-search-type-name" class="button-tab" id="search-type-name">Tìm theo tên</label>
                 <label for="input-search-type-room" class="button-tab" id="search-type-room">Tìm theo căn hộ</label>
+                <label for="input-search-type-car" class="button-tab" id="search-type-car">Tìm theo biển số</label>
             </div>
             
             <div class="input-box">
                 <input type="text" id="input-name" placeholder="VD: Nguyễn Văn A">
                 <input type="text" id="input-room" placeholder="VD: 901A, 1505B">
+                <input type="text" id="input-car" placeholder="VD: 30A12345">
                 <button type="submit" id="search">Tìm</button>
             </div>
         </form>
@@ -161,7 +178,7 @@
             <table>
                 <thead>
                     <tr>
-                        <td>Tên</td>
+                        <td id="searchBy-Title">Tên</td>
                         <td>Căn hộ</td>
                         <td>Tòa nhà</td>
                         <td>Năm</td>
@@ -191,21 +208,27 @@
         function searchName(){
             var name = document.querySelector("#input-name");
             var getRoom = document.querySelector("#input-room");
+            var getCar = document.querySelector("#input-car");
             var getSearchType = document.querySelector('input[name="input-search-type"]:checked');
-            if(name.value.length || getRoom.value.length){
+            if(name.value.length || getRoom.value.length || getCar.value.length){
                 document.querySelector("#search-table").style.display = "block";
                 document.querySelector("#table-body").innerHTML = "<tr><td colspan='5'>Đang tìm kiếm ....</td></tr>";
+                var tableNameTitle = "Tên";
+                    if(getSearchType.value=="car"){
+                        document.querySelector("#searchBy-Title").textContent = "Biển số xe";
+                    }
                 axios({
                     method: 'get',
                     url: '/GetName',
                     params: {
                         name: name.value.length ? (name.value) : "",
                         room: getRoom.value,
+                        car: getCar.value,
                         searchType: getSearchType.value
                     }
                 })
                 .then(function (response) {
-                    console.log(response.data.length)
+                    
                     document.querySelector("#search-table").style.display = "block";
                     if(response.data.length){
                         var dataBody = "";
@@ -216,7 +239,7 @@
                         
                     }
                     else{
-                        document.querySelector("#table-body").innerHTML = "<tr><td colspan='5'>Không tìm thấy tên "+name.value+"</td></tr>";
+                        document.querySelector("#table-body").innerHTML = "<tr><td colspan='5'>Không tìm thấy "+name.value+"</td></tr>";
                     }
                 });
             }

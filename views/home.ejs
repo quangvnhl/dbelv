@@ -43,7 +43,7 @@
             background: #f0f0f0;
         }
         .homes ul li:nth-child(2n+1){
-            background: #dddde1;
+            background: #e7e7e7;
         }
         .homes ul li:first-child{
             border-top-left-radius: 10px;
@@ -95,6 +95,19 @@
             border: 1px solid #aaa;
             border-collapse: collapse;
         }
+        .button{
+            padding: 10px 30px;
+            background: #3cbd99;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        .block{
+            margin: 10px 0;
+        }
     </style>
     <%- include('modules/features-header'); %>
     <script>
@@ -119,23 +132,30 @@
         <% }); %>
     </div>
 
-    <h3>Hoá đơn</h3>
-    <div class="bills">
-        <% billData.forEach(function(bill){ %>
-            <ul>
-                <li><%= bill.name %> | <%= bill.room %> <%= bill.building %> | <%= bill.bill_code %> | <%= bill.bill_date %></li>
-                <li>
-                <% for (var i = 0; i < bill.bill_content.length; i++) {%>
-                    <div id="table-<%= bill.bill_code %>-<%= i %>"></div>
-                    <script>
-                        document.querySelector("#table-<%= bill.bill_code %>-<%= i %>").innerHTML = htmlDecode('<%= bill.bill_content[i] %>');
-                    </script>
-                <% } %>
-                </li>
-
-            </ul>
+    <h3>Thông tin Xe</h3>
+    <div class="cars">
+        <ul>
+        <% carData.forEach(function(car){ %>
+            <li><strong><%= car.car %></strong> - <em><%= car.time %></em></li>
         <% }); %>
+    </ul>
     </div>
+
+    <h3>Thông tin liên hệ</h3>
+    <div class="phones">
+        <ul>
+        <% phoneData.forEach(function(phone){ %>
+            <li><strong><%= phone.phone %></strong> - <em><%= phone.time %></em></li>
+        <% }); %>
+    </ul>
+    </div>
+
+    <div class="block">
+        <a href="/Home/<%= params.room %>/AddCarLicense" class="button">Thêm Xe</a>
+        <a href="/Home/<%= params.room %>/AddPhoneNumber" class="button">Thêm Số Điện Thoại</a>
+    </div>
+
+
 
     <%- include('modules/features'); %>
 

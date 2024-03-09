@@ -9,8 +9,17 @@ const uri = "mongodb+srv://cukinacha:SMfIkhwpVg54GBnj@cluster0.b9x0pn0.mongodb.n
 const dbCollHome = "homenew"
 const dbCollBill = "billnew"
 
+
 const axios = require('axios'); 
 const moment = require('moment');
+const md5 = require('md5');
+const cookieParser = require('cookie-parser')
+const bodyParser = require('body-parser');
+
+
+
+app.use(cookieParser())
+app.use(bodyParser());
 
 app.set('view engine', 'ejs');
 
@@ -29,26 +38,46 @@ app.get('/GetName', (req, res) => {
         // Get the database and collection on which to run the operation
         const database = client.db("dbelv");
         const homes = database.collection(dbCollHome);
+        const cars = database.collection('cars');
         // Query for a movie that has the title 'The Room'
-        const query = {};
-        if(req.query.searchType == "room")
-            query.room = {'$regex' : req.query.room, '$options' : 'i'};
-        else
-            query.name = {'$regex' : req.query.name, '$options' : 'i'};
         
-        // Execute query 
-        const persons = homes.find(query);
-        // Print a message if no documents were found
-        if ((await homes.countDocuments(query)) === 0) {
-            console.log("No documents found!");
+        if(req.query.searchType == "car"){
+            const query = {}
+            const persons = cars.find({car: req.query.car.toUpperCase()});
+
+            if ((await cars.countDocuments(query)) === 0) {
+                console.log("No documents found!");
+            }
+            const array_person = []
+            for await (const person of persons) {
+                person.name = req.query.car.toUpperCase()
+                person.year = ''
+                array_person.push(person)
+            }
+            await res.send(array_person)
         }
-        // Print returned documents
-        const array_person = []
-        for await (const person of persons) {
-            // console.dir(person);
-            array_person.push(person)
+        else{
+            const query = {};
+            if(req.query.searchType == "room")
+                query.room = {'$regex' : req.query.room, '$options' : 'i'};
+            else
+                query.name = {'$regex' : req.query.name, '$options' : 'i'};
+            
+            // Execute query 
+            const persons = homes.find(query);
+            // Print a message if no documents were found
+            if ((await homes.countDocuments(query)) === 0) {
+                console.log("No documents found!");
+            }
+            // Print returned documents
+            const array_person = []
+            for await (const person of persons) {
+                // console.dir(person);
+                array_person.push(person)
+            }
+            await res.send(array_person)
         }
-        await res.send(array_person)
+        
         
     } finally {
         await client.close();
@@ -146,6 +175,8 @@ app.get('/Home/:room', (req, res) => {
             const database = client.db("dbelv");
             const home = database.collection(dbCollHome);
             const bill = database.collection(dbCollBill);
+            const cars = database.collection('cars');
+            const phones = database.collection('phones');
 
             const query = {
                 room: roomParam[0],
@@ -166,9 +197,25 @@ app.get('/Home/:room', (req, res) => {
                 // console.log(bill.content)
             }
 
+
+            const getCars = cars.find(query);
+            var carData = [];
+            for await (const car of getCars) {
+                carData.push(car)
+            }
+
+            const getPhones = phones.find(query);
+            var phoneData = [];
+            for await (const phone of getPhones) {
+                phoneData.push(phone)
+            }
+            
+
             res.render('home',{
                 homeData : homeData,
                 billData : billData,
+                carData : carData,
+                phoneData : phoneData,
                 params: req.params
             });
             
@@ -183,6 +230,193 @@ app.get('/Home/:room', (req, res) => {
     }
     else{
         res.send("Không đúng định dạng")
+    }
+})
+
+
+app.get('/Home/:room/AddCarLicense', function(req, res){
+    checkingAuth(req, function(checkRes){
+        
+        if(checkRes){
+            const responseData = {
+                room : req.params.room
+                
+            }
+            res.render('add_car_license',{
+                data : responseData
+            });
+        }
+        else{
+            res.render('login');
+        }
+        
+    })    
+})
+
+app.post('/Home/AddCarLicense', (req, res) => {
+    console.log("Request POST", req.body)
+    if(req.body.room && req.body.input){
+        const roomSplit = req.body.room.split('-');
+
+        const client = new MongoClient(uri);
+        async function run() {
+        try {
+            const database = client.db("dbelv");
+            const home = database.collection(dbCollHome);
+            const cars = database.collection("cars");
+
+            const getHome = await home.findOne({
+                room: roomSplit[0],
+                building: roomSplit[1]
+            });
+            
+            if(getHome != null){
+                // getHome OK
+                // Set Car License
+                const insertResult = await cars.insertOne({ room: roomSplit[0], building: roomSplit[1], car: req.body.input.toUpperCase(), time: new Date().getTime() });
+                console.log('Inserted a Car =>', insertResult);
+                res.send({
+                    status: true
+                });
+            }
+            else{
+                res.send({
+                    status: false,
+                    message: 'Không có căn hộ này'
+                });
+            }
+            
+
+        } finally {
+            // Close the MongoDB client connection
+            await client.close();
+        }
+        }
+        // Run the function and handle any errors
+        run().catch(console.dir);
+    }
+    else{
+        res.send({
+            status: false,
+            message: 'Chưa nhập đủ dữ liệu'
+        });
+    }
+})
+
+
+app.get('/Home/:room/AddPhoneNumber', function(req, res){
+    checkingAuth(req, function(checkRes){
+        
+        if(checkRes){
+            const responseData = {
+                room : req.params.room
+                
+            }
+            res.render('add_phone',{
+                data : responseData
+            });
+        }
+        else{
+            res.render('login');
+        }
+        
+    })    
+})
+
+
+app.post('/Home/AddPhone', (req, res) => {
+    console.log("Request POST", req.body)
+    if(req.body.room && req.body.input){
+        const roomSplit = req.body.room.split('-');
+
+        const client = new MongoClient(uri);
+        async function run() {
+        try {
+            const database = client.db("dbelv");
+            const home = database.collection(dbCollHome);
+            const phones = database.collection("phones");
+
+            const getHome = await home.findOne({
+                room: roomSplit[0],
+                building: roomSplit[1]
+            });
+            
+            if(getHome != null){
+                // getHome OK
+                // Set Car License
+                const insertResult = await phones.insertOne({ room: roomSplit[0], building: roomSplit[1], phone: req.body.input.toUpperCase(), time: new Date().getTime() });
+                console.log('Inserted a Phone =>', insertResult);
+                res.send({
+                    status: true
+                });
+            }
+            else{
+                res.send({
+                    status: false,
+                    message: 'Không có căn hộ này'
+                });
+            }
+            
+
+        } finally {
+            // Close the MongoDB client connection
+            await client.close();
+        }
+        }
+        // Run the function and handle any errors
+        run().catch(console.dir);
+    }
+    else{
+        res.send({
+            status: false,
+            message: 'Chưa nhập đủ dữ liệu'
+        });
+    }
+})
+
+app.post('/Auth', (req, res) => {
+    if(req.body.input){
+        const client = new MongoClient(uri);
+        async function run() {
+        try {
+            const database = client.db("dbelv");
+            const home = database.collection('settings');
+
+            const getAuth = await home.findOne({
+                user: 'admin',
+                password: md5(req.body.input)
+            });
+            var responseClient = {
+                status: false,
+                message: ""
+            }
+            if(getAuth != null && (getAuth.user && getAuth.password)){
+                // Login Success
+                // Set Cookie
+                responseClient.status = true;
+                responseClient.auth = md5(req.body.input);
+                res.cookie('auth', md5(req.body.input));
+
+            }
+            else{
+                responseClient.message = "Mật khẩu không đúng";
+            }
+            console.log(responseClient)
+            res.send(responseClient);
+
+        } finally {
+            // Close the MongoDB client connection
+            await client.close();
+        }
+        }
+        // Run the function and handle any errors
+        run().catch(console.dir);
+    }
+    else{
+        res.send({
+            status: false,
+            message: 'Chưa nhập mật khẩu'
+        });
     }
 })
 
@@ -269,6 +503,45 @@ app.listen(port, () => {
 
 
 // FUNCTIONS
+
+function checkingAuth(req, callback){
+    if(req.cookies.auth){
+        const client = new MongoClient(uri);
+        async function run() {
+        try {
+            const database = client.db("dbelv");
+            const home = database.collection('settings');
+
+            const getAuth = await home.findOne({
+                user: 'admin',
+                password: req.cookies.auth
+            });
+            var response = false;
+            if(getAuth != null && (getAuth.user && getAuth.password)){
+                // Login Success
+                // Set Cookie
+                response = true;
+
+            }
+            else{
+                //responseClient.message = "Mật khẩu không đúng";
+            }
+            callback(response);
+
+        } finally {
+            // Close the MongoDB client connection
+            await client.close();
+        }
+        }
+        // Run the function and handle any errors
+        run().catch(console.dir);
+    }
+    else{
+        
+    }
+}
+
+
 function dbInsertBill(data){
     const client = new MongoClient(uri);
     async function run() {
