@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data ELV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *{
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+        *, body{
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 16px;
+        }
+        .container{
+            text-align: center;
+        }
+        .logs li{
+            font-size: 13px;
+        }
+        .homes{
+            width: 100%;
+            display: flex;
+            flex-wrap: no-wrap;
+        }
+        .homes ul{
+            border: 2px solid #c2c8cd;
+            border-radius: 10px;
+            margin: 10px;
+            padding: 0;
+            list-style: none;
+            flex: 1;
+        }
+        .homes ul li{
+            padding: 15px;
+            list-style: none;
+            margin: 0;
+            background: #f0f0f0;
+        }
+        .homes ul li:nth-child(2n+1){
+            background: #dddde1;
+        }
+        .homes ul li:first-child{
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .homes ul li:last-child{
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+
+        .bills{
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .bills ul{
+            border: 2px solid #c2c8cd;
+            border-radius: 10px;
+            margin: 10px;
+            padding: 0;
+            list-style: none;
+            width: 100%;
+        }
+        .bills ul li{
+            padding: 15px;
+            list-style: none;
+            margin: 0;
+            background: #f0f0f0;
+        }
+        .bills ul li:nth-child(2n+1){
+            background: #dddde1;
+        }
+        .bills ul li:first-child{
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .bills ul li:last-child{
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        .bills table{
+            border: 1px solid #aaa;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .bills table td{
+            border: 1px solid #aaa;
+            border-collapse: collapse;
+        }
+        .button{
+            padding: 10px 30px;
+            background: #3cbd99;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        .block{
+            margin: 10px 0;
+        }
+    </style>
+    <%- include('modules/features-header'); %>
+    <script>
+        function htmlDecode(input) {
+            var doc = new DOMParser().parseFromString(input, "text/html");
+            return doc.documentElement.textContent;
+        }
+    </script>
+</head>
+
+<body>
+    <h3>Thông tin căn hộ</h3>
+    <div class="homes">
+        <% homeData.forEach(function(home){ %>
+            <ul>
+                <li><%= home.name %></li>
+                <li><%= home.room %> <%= home.building %></li>
+                <li><%= home.year %></li>
+                <li><%= home.service_fee %></li>
+                <li><%= home.area %></li>
+            </ul>
+        <% }); %>
+    </div>
+
+    <div class="block">
+        <a href="/Home/<%= params.room %>/AddCarLicense" class="button">Thêm Xe</a>
+    </div>
+
+    <div class="block">
+        <a href="/Home/<%= params.room %>/AddPhoneNumber" class="button">Thêm Số Điện Thoại</a>
+    </div>
+
+    <h3>Hoá đơn</h3>
+    <div class="bills">
+        <% billData.forEach(function(bill){ %>
+            <ul>
+                <li><%= bill.name %> | <%= bill.room %> <%= bill.building %> | <%= bill.bill_code %> | <%= bill.bill_date %></li>
+                <li>
+                <% for (var i = 0; i < bill.bill_content.length; i++) {%>
+                    <div id="table-<%= bill.bill_code %>-<%= i %>"></div>
+                    <script>
+                        document.querySelector("#table-<%= bill.bill_code %>-<%= i %>").innerHTML = htmlDecode('<%= bill.bill_content[i] %>');
+                    </script>
+                <% } %>
+                </li>
+
+            </ul>
+        <% }); %>
+    </div>
+
+    <%- include('modules/features'); %>
+
+</body>
+
+</html>

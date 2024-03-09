@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Add Car License</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *{
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+        *, body{
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 16px;
+        }
+        .container{
+            text-align: center;
+        }
+        .button{
+            padding: 10px 30px;
+            background: #3cbd99;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        .block{
+            margin: 10px 0;
+        }
+        .input{
+            padding: 10px 10px;
+            font-size: 40px;
+            width: 100%;
+        }
+        #buttonLogin{
+            width: 100%;
+        }
+        .response-text{
+            font-weight: 700;
+        }
+    </style>
+    <%- include('modules/features-header'); %>
+    <script>
+    </script>
+</head>
+
+<body>
+    
+    <h3>Thêm biển số - <%= data.room %></h3>
+    <div class="response-text" id="response-text"></div>
+    <div class="block-input">
+        <div><input type="text" maxlength="8" class="input" id="inputText"></div>
+    </div>
+    <div class="block-input">
+        <button class="button" id="buttonAdd">ADD</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <script>
+        document.querySelector('#buttonAdd').addEventListener('click', function(){
+            document.querySelector('#response-text').textContent = '';
+            var inputText = document.querySelector('#inputText');
+            if(inputText.value.length){
+                axios({
+                    method: 'post',
+                    url: '/Home/AddCarLicense',
+                    data:{
+                        room: '<%= data.room %>',
+                        input: inputText.value
+                    }
+                })
+                .then(function (response) {
+                    console.log(response)
+                    if(response.data.status){
+                        location.href = "/Home/<%= data.room %>";
+                    }
+                    else{
+                        document.querySelector('#response-text').textContent = response.data.message
+                    }
+                });
+            }
+            else{
+                document.querySelector('#response-text').textContent = 'Hãy nhập nội dung';
+            }
+        })
+    </script>
+
+
+    <%- include('modules/features'); %>
+
+</body>
+
+</html>
