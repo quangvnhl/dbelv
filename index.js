@@ -254,53 +254,63 @@ app.get('/Home/:room/AddCarLicense', function(req, res){
 })
 
 app.post('/Home/AddCarLicense', (req, res) => {
-    console.log("Request POST", req.body)
-    if(req.body.room && req.body.input){
-        const roomSplit = req.body.room.split('-');
-
-        const client = new MongoClient(uri);
-        async function run() {
-        try {
-            const database = client.db("dbelv");
-            const home = database.collection(dbCollHome);
-            const cars = database.collection("cars");
-
-            const getHome = await home.findOne({
-                room: roomSplit[0],
-                building: roomSplit[1]
-            });
-            
-            if(getHome != null){
-                // getHome OK
-                // Set Car License
-                const insertResult = await cars.insertOne({ room: roomSplit[0], building: roomSplit[1], car: req.body.input.toUpperCase(), time: new Date().getTime() });
-                console.log('Inserted a Car =>', insertResult);
-                res.send({
-                    status: true
-                });
+    checkingAuth(req, function(logged){
+        if(logged){
+            if(req.body.room && req.body.input){
+                const roomSplit = req.body.room.split('-');
+        
+                const client = new MongoClient(uri);
+                async function run() {
+                try {
+                    const database = client.db("dbelv");
+                    const home = database.collection(dbCollHome);
+                    const cars = database.collection("cars");
+        
+                    const getHome = await home.findOne({
+                        room: roomSplit[0],
+                        building: roomSplit[1]
+                    });
+                    
+                    if(getHome != null){
+                        // getHome OK
+                        // Set Car License
+                        const insertResult = await cars.insertOne({ room: roomSplit[0], building: roomSplit[1], car: req.body.input.toUpperCase(), time: new Date().getTime() });
+                        console.log('Inserted a Car =>', insertResult);
+                        res.send({
+                            status: true
+                        });
+                    }
+                    else{
+                        res.send({
+                            status: false,
+                            message: 'Không có căn hộ này'
+                        });
+                    }
+                    
+        
+                } finally {
+                    // Close the MongoDB client connection
+                    await client.close();
+                }
+                }
+                // Run the function and handle any errors
+                run().catch(console.dir);
             }
             else{
                 res.send({
                     status: false,
-                    message: 'Không có căn hộ này'
+                    message: 'Chưa nhập đủ dữ liệu'
                 });
             }
-            
-
-        } finally {
-            // Close the MongoDB client connection
-            await client.close();
         }
+        else{
+            res.send({
+                status: false,
+                message: 'Chưa đăng nhập'
+            });
         }
-        // Run the function and handle any errors
-        run().catch(console.dir);
-    }
-    else{
-        res.send({
-            status: false,
-            message: 'Chưa nhập đủ dữ liệu'
-        });
-    }
+    })
+    
 })
 
 
@@ -325,53 +335,63 @@ app.get('/Home/:room/AddPhoneNumber', function(req, res){
 
 
 app.post('/Home/AddPhone', (req, res) => {
-    console.log("Request POST", req.body)
-    if(req.body.room && req.body.input){
-        const roomSplit = req.body.room.split('-');
-
-        const client = new MongoClient(uri);
-        async function run() {
-        try {
-            const database = client.db("dbelv");
-            const home = database.collection(dbCollHome);
-            const phones = database.collection("phones");
-
-            const getHome = await home.findOne({
-                room: roomSplit[0],
-                building: roomSplit[1]
-            });
-            
-            if(getHome != null){
-                // getHome OK
-                // Set Car License
-                const insertResult = await phones.insertOne({ room: roomSplit[0], building: roomSplit[1], phone: req.body.input.toUpperCase(), time: new Date().getTime() });
-                console.log('Inserted a Phone =>', insertResult);
-                res.send({
-                    status: true
-                });
+    checkingAuth(req, function(logged){
+        if(logged){
+            if(req.body.room && req.body.input){
+                const roomSplit = req.body.room.split('-');
+        
+                const client = new MongoClient(uri);
+                async function run() {
+                try {
+                    const database = client.db("dbelv");
+                    const home = database.collection(dbCollHome);
+                    const phones = database.collection("phones");
+        
+                    const getHome = await home.findOne({
+                        room: roomSplit[0],
+                        building: roomSplit[1]
+                    });
+                    
+                    if(getHome != null){
+                        // getHome OK
+                        // Set Car License
+                        const insertResult = await phones.insertOne({ room: roomSplit[0], building: roomSplit[1], phone: req.body.input.toUpperCase(), time: new Date().getTime() });
+                        console.log('Inserted a Phone =>', insertResult);
+                        res.send({
+                            status: true
+                        });
+                    }
+                    else{
+                        res.send({
+                            status: false,
+                            message: 'Không có căn hộ này'
+                        });
+                    }
+                    
+        
+                } finally {
+                    // Close the MongoDB client connection
+                    await client.close();
+                }
+                }
+                // Run the function and handle any errors
+                run().catch(console.dir);
             }
             else{
                 res.send({
                     status: false,
-                    message: 'Không có căn hộ này'
+                    message: 'Chưa nhập đủ dữ liệu'
                 });
             }
-            
-
-        } finally {
-            // Close the MongoDB client connection
-            await client.close();
         }
+        else{
+            res.send({
+                status: false,
+                message: 'Chưa đăng nhập'
+            });
         }
-        // Run the function and handle any errors
-        run().catch(console.dir);
-    }
-    else{
-        res.send({
-            status: false,
-            message: 'Chưa nhập đủ dữ liệu'
-        });
-    }
+    })
+    
 })
 
 app.post('/Auth', (req, res) => {
@@ -537,7 +557,7 @@ function checkingAuth(req, callback){
         run().catch(console.dir);
     }
     else{
-        
+        callback(false);
     }
 }
 

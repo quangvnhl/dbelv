@@ -108,6 +108,10 @@
         .block{
             margin: 10px 0;
         }
+        .phone-number{
+            color: #ff0050;
+            text-decoration: none;
+        }
     </style>
     <%- include('modules/features-header'); %>
     <script>
@@ -145,7 +149,7 @@
     <div class="phones">
         <ul>
         <% phoneData.forEach(function(phone){ %>
-            <li><strong><%= phone.phone %></strong> - <em><%= phone.time %></em></li>
+            <li><a class="phone-number" href="tel:<%= phone.phone %>"><strong><%= phone.phone %></strong></a> - <em><%= phone.time %></em></li>
         <% }); %>
     </ul>
     </div>
